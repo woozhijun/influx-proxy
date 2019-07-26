@@ -1,0 +1,13 @@
+# github.com/woozhijun/influxdb1-client v0.0.0-20190726083022-bdfc1b032caf
+github.com/woozhijun/influxdb1-client/client
+github.com/woozhijun/influxdb1-client/models
+github.com/woozhijun/influxdb1-client/pkg/escape
+# gopkg.in/natefinch/lumberjack.v2 v2.0.0
+gopkg.in/natefinch/lumberjack.v2
+# gopkg.in/redis.v5 v5.2.9
+gopkg.in/redis.v5
+gopkg.in/redis.v5/internal
+gopkg.in/redis.v5/internal/consistenthash
+gopkg.in/redis.v5/internal/hashtag
+gopkg.in/redis.v5/internal/pool
+gopkg.in/redis.v5/internal/proto

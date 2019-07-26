@@ -1,0 +1,6 @@
+github.com/woozhijun/influxdb1-client v0.0.0-20190726083022-bdfc1b032caf h1:MqyJ96oMIuXlT3BqqrsOYX3bcifLWIi/MAfk9KHfWJU=
+github.com/woozhijun/influxdb1-client v0.0.0-20190726083022-bdfc1b032caf/go.mod h1:frhG0bE3q/PpEGoWz27lnZREmieszk2IQ4VzUSYdyZM=
+gopkg.in/natefinch/lumberjack.v2 v2.0.0 h1:1Lc07Kr7qY4U2YPouBjpCLxpiyxIVoxqXgkXLknAOE8=
+gopkg.in/natefinch/lumberjack.v2 v2.0.0/go.mod h1:l0ndWWf7gzL7RNwBG7wST/UCcT4T24xpD6X8LsfU/+k=
+gopkg.in/redis.v5 v5.2.9 h1:MNZYOLPomQzZMfpN3ZtD1uyJ2IDonTTlxYiV/pEApiw=
+gopkg.in/redis.v5 v5.2.9/go.mod h1:6gtv0/+A4iM08kdRfocWYB3bLX2tebpNtfKlFT6H4mY=
