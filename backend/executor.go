@@ -23,6 +23,7 @@ func (iqe *InfluxQLExecutor) Query(w http.ResponseWriter, req *http.Request) (er
 	q := strings.TrimSpace(req.FormValue("q"))
 	// better way??
 	matched, err := regexp.MatchString(ExecutorCmds, q)
+	// TODO  all mismatched cluster query
 	if err != nil || !matched {
 		return ErrNotClusterQuery
 	}

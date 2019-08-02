@@ -45,6 +45,8 @@ type HttpBackend struct {
 	URL       string
 	DB        string
 	Zone      string
+	User 	  string
+	Pass      string
 	Active    bool
 	running   bool
 	WriteOnly int
@@ -63,6 +65,8 @@ func NewHttpBackend(cfg *BackendConfig) (hb *HttpBackend) {
 		URL:       cfg.URL,
 		DB:        cfg.DB,
 		Zone:      cfg.Zone,
+		User:	   cfg.User,
+		Pass:	   cfg.Pass,
 		Active:    true,
 		running:   true,
 		WriteOnly: cfg.WriteOnly,
@@ -136,6 +140,10 @@ func (hb *HttpBackend) Query(w http.ResponseWriter, req *http.Request) (err erro
 		req.Form = url.Values{}
 	}
 	req.Form.Set("db", hb.DB)
+	if hb.User != "" {
+		req.Form.Set("u", hb.User)
+		req.Form.Set("p", hb.Pass)
+	}
 	req.ContentLength = 0
 
 	req.URL, err = url.Parse(hb.URL + "/query?" + req.Form.Encode())
@@ -188,6 +196,10 @@ func (hb *HttpBackend) WriteCompressed(p []byte) (err error) {
 func (hb *HttpBackend) WriteStream(stream io.Reader, compressed bool) (err error) {
 	q := url.Values{}
 	q.Set("db", hb.DB)
+	if hb.User != "" {
+		q.Set("u", hb.User)
+		q.Set("p", hb.Pass)
+	}
 
 	req, err := http.NewRequest("POST", hb.URL+"/write?"+q.Encode(), stream)
 	if compressed {

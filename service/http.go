@@ -127,6 +127,7 @@ func (hs *HttpService) HandlerWrite(w http.ResponseWriter, req *http.Request) {
 
 	p, err := ioutil.ReadAll(body)
 	if err != nil {
+		log.Fatal(">>>. Read body err : " + string(p))
 		w.WriteHeader(400)
 		w.Write([]byte(err.Error()))
 		return
