@@ -16,7 +16,7 @@ import (
 	lumberjack "gopkg.in/natefinch/lumberjack.v2"
 	redis "gopkg.in/redis.v5"
 
-	"github.com/shell909090/influx-proxy/backend"
+	"github.com/woozhijun/influx-proxy/backend"
 )
 
 var (
@@ -24,6 +24,7 @@ var (
 	ConfigFile  string
 	NodeName    string
 	RedisAddr   string
+	RedisPass	string
 	LogFilePath string
 )
 
@@ -34,6 +35,7 @@ func init() {
 	flag.StringVar(&ConfigFile, "config", "", "config file")
 	flag.StringVar(&NodeName, "node", "l1", "node name")
 	flag.StringVar(&RedisAddr, "redis", "localhost:6379", "config file")
+	flag.StringVar(&RedisPass, "pass", "", "redis password")
 	flag.Parse()
 }
 
@@ -88,6 +90,10 @@ func main() {
 
 	if RedisAddr != "" {
 		cfg.Addr = RedisAddr
+	}
+
+	if RedisPass != "" {
+		cfg.Password = RedisPass
 	}
 
 	rcs := backend.NewRedisConfigSource(&cfg.Options, cfg.Node)

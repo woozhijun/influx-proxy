@@ -18,7 +18,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/shell909090/influx-proxy/monitor"
+	"github.com/woozhijun/influx-proxy/monitor"
 )
 
 var (
@@ -68,6 +68,7 @@ type InfluxCluster struct {
 	nexts          string
 	query_executor Querier
 	ForbiddenQuery []*regexp.Regexp
+	SimpleQuery    []*regexp.Regexp
 	ObligatedQuery []*regexp.Regexp
 	cfgsrc         *RedisConfigSource
 	bas            []BackendAPI
@@ -79,6 +80,8 @@ type InfluxCluster struct {
 	defaultTags    map[string]string
 	WriteTracing   int
 	QueryTracing   int
+
+	easykey        string
 }
 
 type Statistics struct {
@@ -115,6 +118,12 @@ func NewInfluxCluster(cfgsrc *RedisConfigSource, nodecfg *NodeConfig) (ic *Influ
 	ic.defaultTags["host"] = host
 	if nodecfg.Interval > 0 {
 		ic.ticker = time.NewTicker(time.Second * time.Duration(nodecfg.Interval))
+	}
+
+	err = ic.EasyQuery(SimpleCmds)
+	if err != nil {
+		panic(err)
+		return
 	}
 
 	err = ic.ForbidQuery(ForbidCmds)
@@ -162,7 +171,7 @@ func (ic *InfluxCluster) Flush() {
 
 func (ic *InfluxCluster) WriteStatistics() (err error) {
 	metric := &monitor.Metric{
-		Name: "influxdb.cluster",
+		Name: "_influx.proxy",
 		Tags: ic.defaultTags,
 		Fields: map[string]interface{}{
 			"statQueryRequest":         ic.counter.QueryRequests,
@@ -183,6 +192,18 @@ func (ic *InfluxCluster) WriteStatistics() (err error) {
 		return
 	}
 	return ic.Write([]byte(line + "\n"))
+}
+
+func (ic *InfluxCluster) EasyQuery(s string) (err error) {
+	r, err := regexp.Compile(s)
+	if err != nil {
+		return
+	}
+
+	ic.lock.Lock()
+	defer ic.lock.Unlock()
+	ic.SimpleQuery = append(ic.SimpleQuery, r)
+	return
 }
 
 func (ic *InfluxCluster) ForbidQuery(s string) (err error) {
@@ -287,6 +308,10 @@ func (ic *InfluxCluster) LoadConfig() (err error) {
 	ic.backends = backends
 	ic.bas = bas
 	ic.m2bs = m2bs
+	for k, _ := range m2bs {
+		ic.easykey = k
+		break
+	}
 	ic.lock.Unlock()
 
 	for name, bs := range orig_backends {
@@ -377,6 +402,7 @@ func (ic *InfluxCluster) Query(w http.ResponseWriter, req *http.Request) (err er
 
 	err = ic.query_executor.Query(w, req)
 	if err == nil {
+		log.Println(">>>.cluster query executor finished.")
 		return
 	}
 
@@ -388,13 +414,25 @@ func (ic *InfluxCluster) Query(w http.ResponseWriter, req *http.Request) (err er
 		return
 	}
 
-	key, err := GetMeasurementFromInfluxQL(q)
-	if err != nil {
-		log.Printf("can't get measurement: %s\n", q)
-		w.WriteHeader(400)
-		w.Write([]byte("can't get measurement"))
-		atomic.AddInt64(&ic.stats.QueryRequestsFail, 1)
-		return
+	key := ""
+	if len(ic.SimpleQuery) != 0 {
+		for _, fq := range ic.SimpleQuery {
+			if fq.MatchString(q) {
+				key = ic.easykey
+				break
+			}
+		}
+	}
+
+	if key == "" {
+		key, err = GetMeasurementFromInfluxQL(q)
+		if err != nil {
+			log.Printf("can't get measurement: %s\n", q)
+			w.WriteHeader(400)
+			w.Write([]byte("can't get measurement"))
+			atomic.AddInt64(&ic.stats.QueryRequestsFail, 1)
+			return
+		}
 	}
 
 	apis, ok := ic.GetBackends(key)
