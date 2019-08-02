@@ -30,6 +30,11 @@ Requirements
 * Redis-server
 * Python >= 2.7
 
+Upgrading
+-----------
+* support influx user/pass
+* support show databases
+
 Usage
 ------------
 

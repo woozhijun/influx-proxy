@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"sync"
 )
 
@@ -27,21 +28,26 @@ func NewFileBackend(filename string) (fb *FileBackend, err error) {
 		dataflag: false,
 	}
 
-	fb.producer, err = os.OpenFile(filename+".dat",
+	path,err := filepath.Abs(filepath.Dir(os.Args[0]))
+	if err != nil {
+		log.Print("Get file path error: ", err)
+		return
+	}
+	fb.producer, err = os.OpenFile(path + "/" +filename+".dat",
 		os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
 	if err != nil {
 		log.Print("open producer error: ", err)
 		return
 	}
 
-	fb.consumer, err = os.OpenFile(filename+".dat",
+	fb.consumer, err = os.OpenFile(path + "/" +filename+".dat",
 		os.O_RDONLY, 0644)
 	if err != nil {
 		log.Print("open consumer error: ", err)
 		return
 	}
 
-	fb.meta, err = os.OpenFile(filename+".rec",
+	fb.meta, err = os.OpenFile(path + "/" +filename+".rec",
 		os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		log.Print("open meta error: ", err)
