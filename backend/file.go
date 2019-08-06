@@ -16,6 +16,7 @@ import (
 type FileBackend struct {
 	lock     sync.Mutex
 	filename string
+	filepath string
 	dataflag bool
 	producer *os.File
 	consumer *os.File
@@ -23,16 +24,17 @@ type FileBackend struct {
 }
 
 func NewFileBackend(filename string) (fb *FileBackend, err error) {
-	fb = &FileBackend{
-		filename: filename,
-		dataflag: false,
-	}
-
 	path,err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {
 		log.Print("Get file path error: ", err)
 		return
 	}
+	fb = &FileBackend{
+		filename: filename,
+		filepath: path,
+		dataflag: false,
+	}
+
 	fb.producer, err = os.OpenFile(path + "/" +filename+".dat",
 		os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
 	if err != nil {
@@ -140,7 +142,7 @@ func (fb *FileBackend) CleanUp() (err error) {
 		return
 	}
 
-	fb.producer, err = os.OpenFile(fb.filename+".dat",
+	fb.producer, err = os.OpenFile(fb.filepath + "/" +fb.filename+".dat",
 		os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
 	if err != nil {
 		log.Print("open producer error: ", err)
